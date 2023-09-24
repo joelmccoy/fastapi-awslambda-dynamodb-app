@@ -1,12 +1,15 @@
 """
 Entry point for lambda
 """
-import json
+from fastapi import FastAPI
+from mangum import Mangum
+
+app = FastAPI()
 
 
-# pylint: disable=unused-argument
-def handler(event, context):
-    return {
-        "statusCode": 200,
-        "body": json.dumps("Hello from Lambda!"),
-    }
+@app.get("/")
+def hello_world():
+    return {"message": "Hello from FastAPI"}
+
+
+handler = Mangum(app)

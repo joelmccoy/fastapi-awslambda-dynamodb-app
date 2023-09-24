@@ -5,7 +5,7 @@ module "lambda_function" {
   function_name                           = "ecommerce-lambda-endpoint"
   description                             = "A lambda to serve the API for the e-commerce application."
   handler                                 = "handler.handler"
-  runtime                                 = "python3.10"
+  runtime                                 = "python3.11"
   create_package                          = false
   local_existing_package                  = "build/lambda.zip"
   tracing_mode                            = "Active"
