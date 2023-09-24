@@ -1,3 +1,61 @@
+data "aws_iam_policy_document" "allow_dynamodb_access" {
+  statement {
+    sid    = "DynamoDBIndexAndStreamAccess"
+    effect = "Allow"
+
+    resources = [
+      "${aws_dynamodb_table.ecommerce-table.arn}/index/*",
+      "${aws_dynamodb_table.ecommerce-table.arn}/stream/*",
+    ]
+
+    actions = [
+      "dynamodb:GetShardIterator",
+      "dynamodb:Scan",
+      "dynamodb:Query",
+      "dynamodb:DescribeStream",
+      "dynamodb:GetRecords",
+      "dynamodb:ListStreams",
+    ]
+  }
+
+  statement {
+    sid       = "DynamoDBTableAccess"
+    effect    = "Allow"
+    resources = [aws_dynamodb_table.ecommerce-table.arn]
+
+    actions = [
+      "dynamodb:BatchGetItem",
+      "dynamodb:BatchWriteItem",
+      "dynamodb:ConditionCheckItem",
+      "dynamodb:PutItem",
+      "dynamodb:DescribeTable",
+      "dynamodb:DeleteItem",
+      "dynamodb:GetItem",
+      "dynamodb:Scan",
+      "dynamodb:Query",
+      "dynamodb:UpdateItem",
+    ]
+  }
+
+  statement {
+    sid    = "DynamoDBDescribeLimitsAccess"
+    effect = "Allow"
+
+    resources = [
+      aws_dynamodb_table.ecommerce-table.arn,
+      aws_dynamodb_table.ecommerce-table.arn,
+    ]
+
+    actions = ["dynamodb:DescribeLimits"]
+  }
+}
+
+resource "aws_iam_policy" "allow_dynamodb_access" {
+  name        = "allow-dynamodb-access"
+  description = "Allows the lambda function to read/write to the ecommerce dynamodb table."
+  policy      = data.aws_iam_policy_document.allow_dynamodb_access.json
+}
+
 module "lambda_function" {
   source  = "terraform-aws-modules/lambda/aws"
   version = "6.0.0"
@@ -16,7 +74,9 @@ module "lambda_function" {
       source_arn = "${module.api_gateway.apigatewayv2_api_execution_arn}/*/*"
     }
   }
-  timeout = 30
+  timeout       = 30
+  attach_policy = true
+  policy        = aws_iam_policy.allow_dynamodb_access.arn
 }
 
 #tfsec:ignore:aws-cloudwatch-log-group-customer-key

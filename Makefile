@@ -1,18 +1,18 @@
 init:
 	pip install -r lambda/requirements.txt
+	pip install -r requirements-dev.txt
 
 all: format lint tf-deploy
 
 format:
 	terraform fmt -recursive
 	black lambda
+	isort lambda --profile black
 
 lint: 
 	tflint --recursive
 	flake8 lambda
 	mypy lambda
-	pylint lambda --rcfile .pylintrc
-	tfsec
 
 clean:
 	rm -rf build
